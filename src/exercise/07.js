@@ -12,6 +12,8 @@ const allItems = [
 
 function App() {
   const [items, setItems] = React.useState(allItems)
+  const [shuffling, setShuffling] = React.useState('off')
+  const [intervalId, setIntervalId] = React.useState(null)
 
   function addItem() {
     const itemIds = items.map(i => i.id)
@@ -22,9 +24,39 @@ function App() {
     setItems(items.filter(i => i.id !== item.id))
   }
 
+  function toggleShuffling() {
+    if (shuffling === 'on') {
+      clearInterval(intervalId)
+      setShuffling('off')
+    } else {
+      const intervalId = setInterval(shuffleInputs, 700)
+      setIntervalId(intervalId)
+      setShuffling('on')
+    }
+  }
+
+  function shuffleInputs() {
+    const itemsCopy = [...items]
+
+    do {
+      const randomItemIndex = Math.floor(Math.random() * 4)
+      const randomItem = itemsCopy.at(randomItemIndex)
+      const firstItem = itemsCopy.shift()
+
+      itemsCopy.unshift(randomItem)
+      itemsCopy[randomItemIndex] = firstItem
+    } while (isOrderDifferent(itemsCopy, items))
+
+    setItems(itemsCopy)
+  }
+
+  function isOrderDifferent(array1, array2) {
+    array1.every((value, index) => array2.at(index) !== value)
+  }
+
   return (
     <div className="keys">
-      <button disabled={items.length >= allItems.length} onClick={addItem}>
+      {/* <button disabled={items.length >= allItems.length} onClick={addItem}>
         add item
       </button>
       <ul style={{listStyle: 'none', paddingLeft: 0}}>
@@ -36,7 +68,22 @@ function App() {
             <input id={`${item.id}-input`} defaultValue={item.value} />
           </li>
         ))}
-      </ul>
+      </ul> */}
+      <div>
+        <button onClick={toggleShuffling}>
+          {shuffling === 'off' ? 'Start sfuffling' : 'Stop shuffling'}
+        </button>
+      </div>
+      <hr />
+      <div>
+        {items.map(item => (
+          <input
+            key={item.id}
+            id={`${item.id}-input`}
+            defaultValue={item.value}
+          />
+        ))}
+      </div>
     </div>
   )
 }
